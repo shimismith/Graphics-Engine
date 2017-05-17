@@ -1,0 +1,126 @@
+//	INTERSECTION ORIGINAL CODE THAT I CAME UP WITH MY SELF
+//	 double m1 = (p1b.getY() - p1a.getY()) / (p1b.getX() - p1a.getX());
+//	  double m2 = (p2b.getY() - p2a.getY()) / (p2b.getX() - p2a.getX());
+//
+//	  double b1 = p1a.getY() - m1 * p1a.getX();
+//	  double b2 = p2a.getY() - m2 * p2a.getX();
+//
+//	  double xIntersect = 0, yIntersect = 0;
+//
+//	  boolean parallel = (int)m1 == (int)m2;
+//	  //boolean parallelAndCoincident = (int)m1 == (int)m2&&(int)b1 != (int)b2;
+//	  if(parallel){  //parallel	
+//		  return null;
+//	  }
+//
+//			if (p2a.getX() == p2b.getX()) { // line 2 is vertical
+//				xIntersect = p2a.getX();
+//				if (p1a.getY() == p1b.getY()) { // line 1 is horizantal
+//					yIntersect = p1a.getY();
+//				} else { // line 1 is slopey
+//					yIntersect = m1 * xIntersect + b1;
+//				}
+//			} else if (p2a.getY() == p2b.getY()) { // line 2 is horizantal
+//				yIntersect = p2a.getY();
+//				if (p1a.getX() == p1b.getX()) { // line 1 is vertical
+//					xIntersect = p1a.getX();
+//				} else { // line 1 slopey
+//					xIntersect = (yIntersect - b1) / m1;
+//				}
+//			} else { // line 2 is slopey
+//				if (p1a.getY() == p1b.getY()) { // line 1 is horizantal
+//					yIntersect = p1a.getY();
+//					xIntersect = (yIntersect - b2) / m2;// y=mx+b mx= y-b x= (y-b)/m
+//				} else if (p1a.getX() == p1b.getX()) { // line 1 is vertical
+//					xIntersect = p1a.getX();
+//					yIntersect = (m2 * xIntersect) + b2;
+//				}
+//			
+//				}
+//			
+//	  return new Point(xIntersect, yIntersect);
+
+
+ORINGINAL TRIANGLE RASETERIZING METHOD. IT'S SUPER GOOD BUD.
+
+ public void rasterizeTriangle(Point[] corners){
+	 
+	 //sort corners because it may not be properly sorted
+	 double yMin= 0;
+	 double xMin= MainRun.width;
+	 int startIndex= 0, midIndex= 0, finalIndex= 0;
+	 //get start corner
+	 for(int i=0; i<corners.length; i++){  //TODO the indexes (i) that get passed away when another index is prioritized are the indexes of mid and final- this is a good optimization instead of if statements
+		 if(corners[i].getY()>yMin){
+		   yMin= corners[i].getY();
+		   xMin= corners[i].getX();
+		   startIndex= i;
+		 }
+		 else if(corners[i].getY()==yMin && corners[i].getX()<xMin){
+			 xMin= corners[i].getX();
+			 startIndex= i;
+		 }
+	 }
+	 
+	 //sets possible values for mid and final indexes
+	 if(startIndex==0){
+		 midIndex= 1;
+		 finalIndex= 2;
+	 }
+	 else if(startIndex==1){
+		 midIndex= 0;
+		 finalIndex= 2;
+	 }
+	 else{
+		 midIndex= 0;
+		 finalIndex= 1;
+	 }
+	 
+	 //get middle and final corners
+	 //(x2 − x1)(y2 + y1)...
+	 double twiceSignedArea= ((corners[midIndex].getX()-corners[startIndex].getX())*(corners[midIndex].getY()+
+			 corners[startIndex].getY())) + 
+			 ((corners[finalIndex].getX()-corners[midIndex].getX())*(corners[finalIndex].getY()+
+			corners[midIndex].getY())) + 
+			((corners[startIndex].getX()-corners[finalIndex].getX())*(corners[startIndex].getY()+
+			corners[finalIndex].getY())); //this number is twice the signed area of the triangle- if it is positive the points are clockwise
+	 
+	 if(twiceSignedArea>0){  //counter clockwise- needs to be switched
+		//switch mid and final indexes
+		 int tempIndex= midIndex;
+		 midIndex= finalIndex;
+		 finalIndex= tempIndex;  
+	 }
+	 	 
+	 Point[] temp= Arrays.copyOf(corners, 3);  //make a temporary copy of corners
+	 //adjust the points in corners
+	 corners[0]= temp[startIndex];
+	 corners[1]= temp[midIndex];
+	 corners[2]= temp[finalIndex];
+	 
+		 Point mLeftSide= corners[0].sub(corners[1]).makeUnitLength();
+		 Point leftPoint= corners[0].sub(mLeftSide.mul(0));
+		 for(int scanLine=0; leftPoint.getY()>=corners[1].getY(); scanLine++){  //part before switch over
+			 leftPoint= corners[0].sub(mLeftSide.mul(scanLine));  //left point of line being draw
+			 Point rightPoint;  //right point of line being drawn
+			 if(leftPoint.getY()>=corners[2].getY()){
+				 rightPoint= find2DIntersection(leftPoint, leftPoint.add(new Point(1,0)), corners[0], corners[2]); //0 2 maybe should be 0 1
+			 }
+			 else{
+				 rightPoint= find2DIntersection(leftPoint, leftPoint.add(new Point(1,0)), corners[2], corners[1]); //2 1 maybe should be 0 2
+			 }
+			 
+			 if(leftPoint != null && rightPoint != null){
+				 renderScanLine(leftPoint, rightPoint, scanLine);
+			 }
+		 }
+		 
+		 mLeftSide = corners[1].sub(corners[2]).makeUnitLength();
+		 for(int scanLine=0; leftPoint.getY()>=corners[2].getY(); scanLine++){  //part after switch over
+			 leftPoint= corners[1].sub(mLeftSide.mulNoZ(scanLine));  //left point of line being draw
+			 Point rightPoint= find2DIntersection(leftPoint, leftPoint.add(new Point(1,0,0)), corners[0], corners[2]);  //right point of line being drawn
+			 if(leftPoint != null && rightPoint != null){
+				 renderScanLine(leftPoint, rightPoint, scanLine);
+			 }
+		 }	 
+ }

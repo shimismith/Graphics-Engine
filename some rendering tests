@@ -1,0 +1,38 @@
+      // makes a funny shape heee heee
+     /*
+      int n= 10;
+      Point[] p1= new Point[]{new Point(2*n,30*n), new Point(4*n,26*n), new Point(8*n,26*n), new Point(10*n,30*n), new Point(8*n,34*n), new Point(4*n,34*n)};
+      Point[] p2= new Point[]{new Point(10*n,30*n), new Point(12*n,26*n), new Point(16*n,26*n), new Point(18*n,30*n), new Point(16*n,34*n), new Point(12*n,34*n)};
+      Point[] p3= new Point[]{new Point(10*n,30*n), new Point(8*n,26*n), new Point(8*n,7*n), new Point(10*n,3*n), new Point(12*n,7*n), new Point(12*n,26*n)};
+      ren.triangulateConvexPolygon(p1);
+      ren.triangulateConvexPolygon(p2);
+      ren.triangulateConvexPolygon(p3);
+      */
+      
+            
+     // ren.rasterizeCircle(new Point(300, 300), 100);
+      
+      /*Point[] unimonotonePolygon= new Point[]{new Point(2*n,11*n), new Point(4*n,7*n), new Point(6*n,9*n), new Point(9*n,4*n), new Point(11*n,8*n), new Point(17*n,7*n), 
+    		  new Point(17*n,11*n), new Point(21*n,11*n), new Point(24*n,9*n), new Point(24*n,4*n), new Point(29*n,14*n)};
+      ren.triangulateUnimonotonePolygon(unimonotonePolygon);
+        */
+        
+                int n=10;  //for testing      
+//      Point[] polygon= new Point[]{new Point(3*n,9*n), new Point(6*n,3*n), new Point(18*n,3*n), new Point(20*n,9*n), new Point(16*n,14*n), new Point(6*n,14*n)};
+//      ren.triangulateConvexPolygon(polygon);
+
+
+
+
+//BRESENHAM TEST
+ double rotate = 0;
+  int x = 540;
+  int y = 0;
+  x -= 540;
+  y -= 360;
+  int xr = (int)(x*Math.cos(rotate) - y*Math.sin(rotate));
+  int yr = (int)(x*Math.sin(rotate) + y*Math.cos(rotate));
+  xr += 540;
+  yr += 360;
+  ren.bresenham(new Point(540,360), new Point(xr, yr), Color.BLUE);
+  rotate += 0.005;

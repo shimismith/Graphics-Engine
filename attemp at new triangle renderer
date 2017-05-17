@@ -1,0 +1,96 @@
+ //sort corners because it may not be properly sorted
+	 double yMin= 0;
+	 double xMin= MainRun.width;
+	 int startIndex= 0, midIndex= 0, finalIndex= 0;
+	 //get start corner
+	 for(int i=0; i<corners.length; i++){  //TODO the indexes (i) that get passed away when another index is prioritized are the indexes of mid and final- this is a good optimization instead of if statements
+		 if(corners[i].getY()>yMin){
+		   yMin= corners[i].getY();
+		   xMin= corners[i].getX();
+		   startIndex= i;
+		 }
+		 else if(corners[i].getY()==yMin && corners[i].getX()<xMin){
+			 xMin= corners[i].getX();
+			 startIndex= i;
+		 }
+	 }
+	 
+	 //sets possible values for mid and final indexes
+	 if(startIndex==0){
+		 midIndex= 1;
+		 finalIndex= 2;
+	 }
+	 else if(startIndex==1){
+		 midIndex= 0;
+		 finalIndex= 2;
+	 }
+	 else{
+		 midIndex= 0;
+		 finalIndex= 1;
+	 }
+	 
+	 //get middle and final corners
+	 //(x2 − x1)(y2 + y1)...
+	 double twiceSignedArea= ((corners[midIndex].getX()-corners[startIndex].getX())*(corners[midIndex].getY()+
+			 corners[startIndex].getY())) + 
+			 ((corners[finalIndex].getX()-corners[midIndex].getX())*(corners[finalIndex].getY()+
+			corners[midIndex].getY())) + 
+			((corners[startIndex].getX()-corners[finalIndex].getX())*(corners[startIndex].getY()+
+			corners[finalIndex].getY())); //this number is twice the signed area of the triangle- if it is positive the points are clockwise
+	 
+	 if(twiceSignedArea>0){  //counter clockwise- needs to be switched
+		//switch mid and final indexes
+		 int tempIndex= midIndex;
+		 midIndex= finalIndex;
+		 finalIndex= tempIndex;  
+	 }
+	 	 
+	 Point[] temp= Arrays.copyOf(corners, 3);  //make a temporary copy of corners
+	 //adjust the points in corners
+	 corners[0]= temp[startIndex];
+	 corners[1]= temp[midIndex];
+	 corners[2]= temp[finalIndex];
+	 
+	 //Feew, all that was just the preparation. Let the magic begin.
+	 
+		 Point mLeftSide= corners[0].sub(corners[1]).makeUnitLength();
+		 Point leftPoint= corners[0];  // left point of scan line
+		 
+		 Point mRightSide = corners[0].sub(corners[2]).makeUnitLength();
+		 Point rightPoint = corners[0];  // right point of scan line
+		 
+		 for(int scanLine=0; leftPoint.getY()>=corners[1].getY() && rightPoint.getY()>=corners[2].getY(); scanLine++){  //part before switch over
+
+			 leftPoint= corners[0].sub(mLeftSide.mul(scanLine));  //left point of line being draw
+			 rightPoint = corners[0].sub(mRightSide.mul(scanLine));
+			 
+			 if(leftPoint != null && rightPoint != null){
+				 renderScanLine(leftPoint, rightPoint, scanLine);
+			 }
+		 }
+		 
+		 if(rightPoint.getY() < corners[2].getY()){  //CASE 2 - RIGHT SIDE SLOPE CHANGE
+			 mRightSide = corners[2].sub(corners[1]).makeUnitLength();
+			 for(int scanLine=0; rightPoint.getY()>=corners[1].getY(); scanLine++){  //part after switch over
+				 leftPoint= corners[0].sub(mLeftSide.mul(scanLine));  //left point of line being draw
+				 rightPoint = corners[2].sub(mRightSide.mul(scanLine));
+
+				 if(leftPoint != null && rightPoint != null){
+					 renderScanLine(leftPoint, rightPoint, scanLine);
+				 }
+			 }
+		 
+		 }
+		 else{  //left side slope change
+			 mLeftSide = corners[1].sub(corners[2]).makeUnitLength();
+			 for(int scanLine=0; rightPoint.getY()>=corners[2].getY(); scanLine++){  //part after switch over
+				 leftPoint= corners[1].sub(mLeftSide.mul(scanLine));  //left point of line being draw
+				 rightPoint = corners[0].sub(mRightSide.mul(scanLine));
+
+				 if(leftPoint != null && rightPoint != null){
+					 renderScanLine(leftPoint, rightPoint, scanLine);
+				 }
+			 }
+			 
+		 }
+		 
